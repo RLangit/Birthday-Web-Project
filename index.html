@@ -852,9 +852,9 @@ function openLetter(){
 
 // ── WORDLE ──
 (function(){
-  const SECRET = 'IONIC'; // 5-letter word — change if you want
+  const SECRET = 'IONIC'; // 5-letter word
   const ROWS = 6, COLS = 5;
-  let grid = [], currentRow = 0, currentCol = 0, gameOver = false;
+  let grid = [], currentRow = 0, currentCol = 0, gameOver = false; guessHistory = [];
   let kbState = {};
 
   function buildGrid(){
@@ -912,6 +912,7 @@ function openLetter(){
     grid[currentRow][currentCol].classList.remove('current');
     currentCol++;
     if(currentCol < COLS) grid[currentRow][currentCol].classList.add('current');
+
   }
 
   function deleteLetter(){
@@ -928,6 +929,7 @@ function openLetter(){
       return;
     }
     const guess = grid[currentRow].map(c=>c.textContent).join('');
+    guessHistory.push(guess);
     const result = score(guess, SECRET);
     // Animate reveal
     result.forEach((r,i)=>{
@@ -951,6 +953,7 @@ function openLetter(){
         setMsg('🎉 You got it!! 🎉');
         document.getElementById('wordleExplain').style.display = 'block';
         gameOver = true;
+        sendWordleResult('Wordle result: SHE WON! 🎉\nGuesses:\n' + guessHistory.join('\n'));
       } else {
         currentRow++;
         currentCol = 0;
@@ -958,6 +961,7 @@ function openLetter(){
           setMsg('The word was: '+SECRET+' 😅');
           document.getElementById('wordleExplain').style.display = 'block';
           gameOver = true;
+          sendWordleResult('Wordle result: she lost 😅\nThe word was: ' + SECRET + '\nGuesses:\n' + guessHistory.join('\n'));
         } else {
           grid[currentRow][0].classList.add('current');
         }
@@ -1050,6 +1054,16 @@ function sendToMe(answer, reason = '-') {
     reason: reason
   }).then(() => {
     console.log('Email sent!');
+  }).catch((err) => {
+    console.log('Failed:', err);
+  });
+}
+
+  function sendWordleResult(result) {
+  emailjs.send('service_2vpgjcw', 'template_yqml9o4', {
+    wordle_result: result
+  }).then(() => {
+    console.log('Wordle email sent!');
   }).catch((err) => {
     console.log('Failed:', err);
   });
